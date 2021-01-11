@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.db2020.delivery.mapper.OrderMapper">
+
+    <select id="selectOrderList" parameterType="HashMap" resultType="HashMap">
+        <![CDATA[
+        SELECT
+            a.order_seq, a.order_createAt, a.order_payment, a.order_total_price, a.order_summary, d.grade_nm, b.delivery_state
+        FROM
+            orders a
+		LEFT JOIN delivery b ON a.order_seq = b.delivery_seq
+        LEFT JOIN deliverer c ON b.deliverer_id = c.deliverer_id
+        LEFT JOIN grade d ON c.grade_seq = d.grade_seq
+        WHERE a.shop_id = #{member_id}
+        AND b.delivery_state = '배달 중' or b.delivery_state = '배달 준비 중'
+         ]]>
+    </select>
+
+    <select id="selectOrderEndList" parameterType="HashMap" resultType="DeliveryVO">
+        SELECT
+		a.order_seq, b.delivery_startAt, b.delivery_completeAt, a.order_payment, a.order_total_price, a.order_summary, c.caution_reason AS caution_title
+        FROM
+            team2020.orders a
+        LEFT JOIN team2020.delivery b on a.order_seq = b.delivery_seq
+        LEFT JOIN team2020.deliverer d on b.deliverer_id = d.deliverer_id
+        LEFT JOIN team2020.caution c on b.delivery_seq = c.delivery_seq
+        LEFT JOIN team2020.shop e on a.shop_id = e.shop_id
+        WHERE a.shop_id = #{member_id}
+        AND b.delivery_state = '배달 완료'
+    </select>
+
+    <select id="orderInfo" parameterType="String" resultType="HashMap">
+        SELECT
+            *
+        FROM
+            orders a, shop b
+        WHERE
+            a.shop_id = b.shop_id
+        AND
+            order_seq = #{order_seq}
+    </select>
+
+    <update id="insertMatch" parameterType="HashMap">
+        UPDATE
+            delivery
+        SET
+            deliverer_id = #{deliverer_id}, delivery_expectedAt=#{delivery_expectedAt}, delivery_matchingYn = 'Y'
+        WHERE
+            delivery_seq = #{order_seq}
+    </update>
+    <update id="startMatch" parameterType="HashMap">
+        UPDATE
+            delivery
+        SET
+            delivery_startAt=#{delivery_startAt}, delivery_state = '배달 중'
+        WHERE
+            delivery_seq = #{order_seq}
+    </update>
+    <update id="endMatch" parameterType="HashMap">
+        UPDATE
+            delivery
+        SET
+            delivery_state = '배달 완료', delivery_completeAt = #{delivery_completeAt}
+        WHERE
+            delivery_seq = #{order_seq}
+    </update>
+
+    <select id="orderMatchYn" parameterType="String" resultType="String">
+        SELECT
+            delivery_matchingYn
+        FROM
+            delivery
+        WHERE
+            delivery_seq = #{order_seq}
+    </select>
+</mapper>
+

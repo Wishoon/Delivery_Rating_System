@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.db2020.delivery.mapper.CycleMapper">
+
+    <select id="selectCycle_list" parameterType="HashMap" resultType="CycleVO">
+        SELECT a.motorcycle_seq, b.employ_motorcycle_seq, c.member_nm, a.motorcycle_owner, b.motorcycle_rentStart, b.motorcycle_rentEnd
+        FROM
+            motorcycle a
+        LEFT JOIN employ_motorcycle b ON a.motorcycle_seq = b.motorcycle_seq
+        LEFT JOIN member c ON b.deliverer_id = c.member_id
+    </select>
+    
+    <select id="selectCycle_Info" parameterType="HashMap" resultType="CycleDetailVO">
+        SELECT
+            a.motorcycle_seq, b.employ_motorcycle_seq, a.motorcycle_type, c.member_id, c.member_nm, a.motorcycle_createAt, b.motorcycle_rentStart, b.motorcycle_rentEnd, a.motorcycle_rent_price, a.motorcycle_owner, a.motorcycle_registNum
+        FROM
+            motorcycle a
+        LEFT JOIN employ_motorcycle b ON a.motorcycle_seq = b.motorcycle_seq
+        LEFT JOIN member c ON b.deliverer_id = c.member_id
+        WHERE
+            a.motorcycle_seq = #{motorcycle_seq}
+    </select>
+
+    <insert id="insertCycle" parameterType="HashMap">
+        INSERT INTO (motorcycle_type, motorcycle_registNum, motorcycle_rent_price, motorcycle_owner)
+        VALUES (#{motorcycle_type}, #{motorcycle_registNum}, #{motorcycle_rent_price}, "회사")
+    </insert>
+
+</mapper>

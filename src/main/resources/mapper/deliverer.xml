@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.db2020.delivery.mapper.DelivererMapper">
+
+<!--    메인 페이지 오늘날짜 정보-->
+    <select id="mainToday" parameterType="HashMap" resultType="MainVO">
+        <![CDATA[
+        SELECT SUM(b.order_delivery_price) AS deliverer_todayPrice, COUNT(b.order_delivery_price) AS deliverer_todayCnt, count(c.caution_seq) AS caution_todayCnt
+        FROM delivery a
+        LEFT JOIN orders b ON a.delivery_seq = b.order_seq
+        LEFT JOIN caution c ON a.delivery_seq = c.delivery_seq
+        WHERE
+            a.deliverer_id = #{member_id}
+        AND
+            a.delivery_state = '배달 완료'
+        AND
+           DATE(a.delivery_completeAt) = curdate()
+        ]]>
+    </select>
+
+<!--    메인 페이지 한달치 정보 -->
+    <select id="monthToday" parameterType="HashMap" resultType="MainVO">
+        <![CDATA[
+        SELECT SUM(b.order_delivery_price) AS deliverer_monthPrice, COUNT(b.order_delivery_price) AS deliverer_monthCnt, COUNT(d.caution_seq) AS caution_monthCnt
+        FROM delivery a
+        LEFT JOIN orders b ON a.delivery_seq = b.order_seq
+        LEFT JOIN deliverer c ON a.deliverer_id = c.deliverer_id
+        LEFT JOIN caution d ON a.delivery_seq = d.delivery_seq
+        WHERE
+           a.delivery_completeAt between LAST_DAY(NOW() - interval 1 month) + interval 1 DAY and LAST_DAY(NOW())
+        AND
+            a.delivery_seq = b.order_seq
+        AND
+            a.deliverer_id = #{member_id}
+        AND
+            a.delivery_state = '배달 완료'
+        ]]>
+    </select>
+
+    <!--    메인 페이지 누적 정보 -->
+    <select id="accumulate" parameterType="HashMap" resultType="MainVO">
+        <![CDATA[
+        SELECT SUM(b.order_delivery_price) AS deliverer_totalPrice, COUNT(b.order_delivery_price) AS deliverer_totalCnt, count(c.caution_seq) AS caution_totalCnt
+        FROM team2020.delivery a
+        LEFT JOIN team2020.orders b ON a.delivery_seq = b.order_seq
+        LEFT JOIN team2020.caution c ON a.delivery_seq = c.delivery_seq
+        WHERE
+            a.deliverer_id = #{member_id}
+        AND
+            a.delivery_state = '배달 완료'
+        ]]>
+    </select>
+
+    <select id="logout" parameterType="HashMap" resultType="HashMap">
+        <![CDATA[
+        SELECT SUM(b.order_delivery_price) AS deliverer_todayPrice, COUNT(b.order_delivery_price) AS deliverer_todayCnt, count(c.caution_seq) AS caution_todayCnt, d.deliverer_score, e.grade_nm
+        FROM team2020.delivery a
+        LEFT JOIN team2020.orders b ON a.delivery_seq = b.order_seq
+        LEFT JOIN team2020.caution c ON a.delivery_seq = c.delivery_seq
+        LEFT JOIN team2020.deliverer d ON a.deliverer_id = d.deliverer_id
+        LEFT JOIN team2020.grade e ON d.grade_seq = e.grade_seq
+        WHERE
+            a.deliverer_id = #{member_id}
+        AND
+            a.delivery_state = '배달 완료'
+        AND
+           DATE(a.delivery_completeAt) = curdate()
+        ]]>
+    </select>
+</mapper>
+
+

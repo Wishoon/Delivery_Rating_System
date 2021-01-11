@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.db2020.delivery.mapper.CautionMapper">
+
+
+    <select id="selectDetailCaution" parameterType="HashMap" resultType="CautionDetailVO">
+        SELECT
+	        a.order_seq, b.delivery_startAt, b.delivery_completeAt, e.member_nm, c.caution_reason AS caution_title
+        FROM
+            orders a
+        LEFT JOIN delivery b ON a.order_seq = b.delivery_seq
+        LEFT JOIN caution c ON b.delivery_seq = c.delivery_seq
+        LEFT JOIN caution_entry d ON c.caution_entry_seq = d.caution_entry_seq
+        LEFT JOIN member e ON e.member_id = b.deliverer_id
+        WHERE
+            a.shop_id = #{member_id}
+        AND
+            c.delivery_seq = a.order_seq
+    </select>
+
+    <insert id="insertCaution" parameterType="HashMap">
+        INSERT INTO caution (delivery_seq, shop_id, caution_entry_seq, caution_reason, deliverer_registNum)
+        VALUES (#{delivery_seq}, #{member_id}, #{caution_entry_seq}, #{caution_title},
+        (SELECT b.member_registNum
+        FROM delivery a, member b
+        WHERE a.delivery_seq = #{delivery_seq}
+        AND a.deliverer_id = b.member_id))
+    </insert>
+
+    <select id="selectCautionYn" parameterType="String" resultType="String">
+        SELECT deliverer_cautionYn
+        FROM deliverer
+        WHERE deliverer_id = (SELECT deliverer_id FROM delivery
+								WHERE delivery_seq = #{delivery_seq})
+    </select>
+
+    <update id="updateScoreY" parameterType="String">
+        UPDATE deliverer
+        SET deliverer_score = deliverer_score - 5, deliverer_cautionYn = 'N'
+        WHERE deliverer_id = (SELECT deliverer_id FROM delivery
+								WHERE delivery_seq = #{delivery_seq})
+    </update>
+
+    <update id="updateScoreN" parameterType="String">
+        UPDATE deliverer
+        SET deliverer_cautionYn = 'Y'
+        WHERE deliverer_id = (SELECT deliverer_id FROM delivery
+								WHERE delivery_seq = #{delivery_seq})
+    </update>
+
+</mapper>

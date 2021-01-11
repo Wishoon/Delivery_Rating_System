@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.db2020.delivery.mapper.AuthMapper">
+    <select id="deliverer_signIn" parameterType="HashMap" resultType="HashMap">
+        SELECT
+              a.member_id, a.member_nm, c.grade_nm, b.deliverer_score, a.member_role, min(d.caution_reason) AS member_caution
+        FROM
+              member a
+        LEFT JOIN deliverer b ON a.member_id = b.deliverer_id
+        LEFT JOIN grade c ON b.grade_seq = c.grade_seq
+        LEFT JOIN caution d ON a.member_registNum = d.deliverer_registNum
+        WHERE
+              a.member_id = #{member_id}
+        AND
+              member_pw = #{member_pw}
+    </select>
+
+    <select id="shop_signIn" parameterType="HashMap" resultType="HashMap">
+        SELECT a.*, b.*
+        FROM
+            member a, shop b
+        WHERE
+            a.member_id = b.shop_id
+        AND
+            a.member_id = #{member_id}
+        AND
+            a.member_pw = #{member_pw}
+    </select>
+    <select id="admin_signIn" parameterType="HasHMap" resultType="HashMap">
+        SELECT  *
+        FROM
+            member
+        WHERE
+            member_role = 'ROLE_ADMIN'
+        AND
+            member_id = #{member_id}
+        AND
+            member_pw = #{member_pw}
+    </select>
+</mapper>
+
